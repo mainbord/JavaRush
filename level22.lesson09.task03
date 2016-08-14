@@ -25,28 +25,6 @@ public class Solution {
     public static void main(String[] args) throws IOException
     {
 //...
-        ArrayDeque<Integer> previousSteps = new ArrayDeque<>();
-        previousSteps.push(1);
-        previousSteps.push(2);
-        previousSteps.push(3);
-        System.out.println(previousSteps.pop());
-        System.out.println(previousSteps.pop());
-        System.out.println(previousSteps.pop());
-        HashMap<Integer,Boolean> readElemets = new HashMap<>();
-        readElemets.put(3, false);
-        readElemets.put(3, true);
-
-        for (Map.Entry<Integer, Boolean> pair : readElemets.entrySet()){
-            System.out.println(pair.getKey() + " " + pair.getValue());
-        }
-
-        Iterator<Map.Entry<Integer,Boolean>> it = readElemets.entrySet().iterator();
-        while (it.hasNext()){
-            Map.Entry<Integer, Boolean> pair2 = it.next();
-            System.out.println(pair2.getKey() + " " + pair2.getValue());
-        }
-
-
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String filename = reader.readLine();
         ArrayList<String> stringOfWords = new ArrayList<>();
@@ -72,7 +50,6 @@ public class Solution {
     }
 
     public static StringBuilder getLine(String... words) {
-//Вставить две проверки, на null и на одно слово
         if (words == null){return new StringBuilder();}
         if (words.length==0){return new StringBuilder(words[0]);}
 
@@ -106,13 +83,12 @@ public class Solution {
                 for (int j = step; j < inwordscopy.size(); j++)
                 {
                     String currentelement = inwordscopy.get(j);
-                    System.out.println("Начало внутреннего цикла");
                     System.out.println("текущий элемент " + currentelement + " " + step);
                     if (readElemets.get(j)== false){
                         if (startword.toLowerCase().charAt(0) == currentelement.toLowerCase().charAt(currentelement.length()-1)){
+//if (startword.toLowerCase().charAt(0) == currentelement.toLowerCase().charAt(currentelement.length()-1)){
                             outwords.add(currentelement);
                             readElemets.put(j, true);
-//System.out.println("значение текущего элемента использован или нет " + readElemets.get(j));
                             startword = currentelement;
                             previousSteps.push(j);
                             step=0;
@@ -123,7 +99,6 @@ public class Solution {
                                 break breakpoint;
                             }
                             else {
-//previousSteps.removeLast();
                                 step = previousSteps.pop()+1;
                                 readElemets.put(step-1,false);
                                 if (step>= inwordscopy.size()){break loop;}
@@ -142,11 +117,6 @@ public class Solution {
                             break breakpoint;
                         }
                         else {
-//previousSteps.removeLast();
-                            //previousSteps.pop();
-                            System.out.println("////////////////////////////");
-                            System.out.println(previousSteps);
-                            System.out.println("////////////////////////////");
                             step = previousSteps.pop()+1;
                             readElemets.put(step-1,false);
                             if (step>= inwordscopy.size()){break loop;}
@@ -158,18 +128,15 @@ public class Solution {
                             break;
                         }
                     }
-//System.out.println("До сюда не должно доходить, если доходит, значит что-то не так.");
                 }
             }
-            System.out.println("Конец первого цикла");
         }
         StringBuilder sb = new StringBuilder();
         for (String ss : outwords){
             sb.insert(0,ss);
-            sb.append(" ");
+            sb.insert(0, " ");
         }
-        sb.trimToSize();
-        sb.reverse();
+        sb = new StringBuilder(sb.toString().trim());
         return sb;
     }
 }
