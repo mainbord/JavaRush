@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 /* Составить цепочку слов
 В методе main считайте с консоли имя файла, который содержит слова, разделенные пробелом.
@@ -24,8 +22,31 @@ import java.util.Collections;
 Амстердам Мельбурн Нью-Йорк Киев Вена
 */
 public class Solution {
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException
+    {
 //...
+        ArrayDeque<Integer> previousSteps = new ArrayDeque<>();
+        previousSteps.push(1);
+        previousSteps.push(2);
+        previousSteps.push(3);
+        System.out.println(previousSteps.pop());
+        System.out.println(previousSteps.pop());
+        System.out.println(previousSteps.pop());
+        HashMap<Integer,Boolean> readElemets = new HashMap<>();
+        readElemets.put(3, false);
+        readElemets.put(3, true);
+
+        for (Map.Entry<Integer, Boolean> pair : readElemets.entrySet()){
+            System.out.println(pair.getKey() + " " + pair.getValue());
+        }
+
+        Iterator<Map.Entry<Integer,Boolean>> it = readElemets.entrySet().iterator();
+        while (it.hasNext()){
+            Map.Entry<Integer, Boolean> pair2 = it.next();
+            System.out.println(pair2.getKey() + " " + pair2.getValue());
+        }
+
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String filename = reader.readLine();
         ArrayList<String> stringOfWords = new ArrayList<>();
@@ -51,43 +72,104 @@ public class Solution {
     }
 
     public static StringBuilder getLine(String... words) {
-        if (words.length == 0){return new StringBuilder();}
-        StringBuilder sb = new StringBuilder();
-        ArrayList<String> listOfWords = new ArrayList<>();
-        listOfWords.addAll(Arrays.asList(words));
-        sb.append(listOfWords.get(0));
-        sb.append(" ");
-        int count = 0;
-        for (int i = 0; i < listOfWords.size(); i++)
+//Вставить две проверки, на null и на одно слово
+        if (words == null){return new StringBuilder();}
+        if (words.length==0){return new StringBuilder(words[0]);}
+
+        ArrayList<String> inwords = new ArrayList<>(Arrays.asList(words));
+        ArrayList<String> outwords = new ArrayList<>();
+
+        breakpoint:
+        for (int i = 0; i < inwords.size(); i++)
         {
-            count = 0;
-            String s1 = listOfWords.get(i);
-            if (s1.equals("")){continue;}
-            for (int j = i+1; j < listOfWords.size(); j++)
+            outwords = new ArrayList<>();
+            String startword = inwords.get(i);
+            outwords.add(startword);
+            ArrayList<String> inwordscopy = new ArrayList<>(inwords);
+            inwordscopy.remove(i);
+            ArrayDeque<Integer> previousSteps = new ArrayDeque<>();
+            HashMap<Integer,Boolean> readElemets = new HashMap<>();
+            for (int h = 0; h < inwordscopy.size(); h++)
             {
-                String s2 = listOfWords.get(j);
-                if (s1.toLowerCase().charAt(s1.length()-1) == s2.toLowerCase().charAt(0)){
-                    if (i != 0){
-                    sb.append(s1);
-                    sb.append(" ");
-                    sb.append(s2);
-                    sb.append(" ");
-                    count++;}
-                    else {                    sb.append(s2);
-                        sb.append(" ");
-                        count++;}
-                    if (j == listOfWords.size()){
-                        sb.append(s2);
-                        sb.append(" ");
+                readElemets.put(h,false);
+            }
+
+            int step = 0;
+            loop:
+            while (true){
+                System.out.println("_____________________________________");
+                System.out.println("while " + outwords);
+                System.out.println(previousSteps);
+                System.out.println(readElemets);
+                System.out.println("_____________________________________");
+                if (step>= inwordscopy.size()){break;}
+                for (int j = step; j < inwordscopy.size(); j++)
+                {
+                    String currentelement = inwordscopy.get(j);
+                    System.out.println("Начало внутреннего цикла");
+                    System.out.println("текущий элемент " + currentelement + " " + step);
+                    if (readElemets.get(j)== false){
+                        if (startword.toLowerCase().charAt(0) == currentelement.toLowerCase().charAt(currentelement.length()-1)){
+                            outwords.add(currentelement);
+                            readElemets.put(j, true);
+//System.out.println("значение текущего элемента использован или нет " + readElemets.get(j));
+                            startword = currentelement;
+                            previousSteps.push(j);
+                            step=0;
+                            break;
+                        }
+                        else if (j == inwordscopy.size()-1){
+                            if (inwordscopy.size() == outwords.size()-1){
+                                break breakpoint;
+                            }
+                            else {
+//previousSteps.removeLast();
+                                step = previousSteps.pop()+1;
+                                readElemets.put(step-1,false);
+                                if (step>= inwordscopy.size()){break loop;}
+                                else {startword = inwordscopy.get(previousSteps.peek());}
+                                outwords.remove(outwords.size()-1);
+                                if (outwords.size()==1){
+                                    step = 0;
+                                    break loop;}
+                                break;
+                            }
+                        }
                     }
-                    listOfWords.remove(i);
-                    i--;
-                    break;
+
+                    else if (j == inwordscopy.size()-1){
+                        if (inwordscopy.size() == outwords.size()-1){
+                            break breakpoint;
+                        }
+                        else {
+//previousSteps.removeLast();
+                            //previousSteps.pop();
+                            System.out.println("////////////////////////////");
+                            System.out.println(previousSteps);
+                            System.out.println("////////////////////////////");
+                            step = previousSteps.pop()+1;
+                            readElemets.put(step-1,false);
+                            if (step>= inwordscopy.size()){break loop;}
+                            else {startword = inwordscopy.get(previousSteps.peek());}
+                            outwords.remove(outwords.size()-1);
+                            if (outwords.size()==1){
+                                step = 0;
+                                break loop;}
+                            break;
+                        }
+                    }
+//System.out.println("До сюда не должно доходить, если доходит, значит что-то не так.");
                 }
             }
-            if (count == 0){break;}
+            System.out.println("Конец первого цикла");
         }
-        sb = new StringBuilder(sb.toString().trim());
+        StringBuilder sb = new StringBuilder();
+        for (String ss : outwords){
+            sb.insert(0,ss);
+            sb.append(" ");
+        }
+        sb.trimToSize();
+        sb.reverse();
         return sb;
     }
 }
