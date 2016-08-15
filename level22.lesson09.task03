@@ -1,10 +1,8 @@
 package com.javarush.test.level22.lesson09.task03;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.SynchronousQueue;
 
 /* Составить цепочку слов
 В методе main считайте с консоли имя файла, который содержит слова, разделенные пробелом.
@@ -26,32 +24,31 @@ public class Solution {
     {
 //...
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String filename = reader.readLine();
-        ArrayList<String> stringOfWords = new ArrayList<>();
+        String fileName = reader.readLine();
+        reader.close();
+        Scanner fileIn = new Scanner(new FileInputStream(fileName));
         ArrayList<String> words = new ArrayList<>();
-        reader = new BufferedReader(new FileReader(filename));
-        while (reader.ready()){
-            stringOfWords.add(reader.readLine());
+
+        while (fileIn.hasNext()) {
+            words.add(fileIn.next());
         }
-        for (String temp : stringOfWords){
-            String [] arr = temp.split(" ");
-            for (String temp2 : arr){
-                words.add(temp2);
-            }
-        }
+        fileIn.close();
+
         String [] ourString = new String [words.size()];
         for (int i = 0; i < ourString.length; i++)
         {
             ourString[i] = words.get(i);
         }
-        reader.close();
+
         StringBuilder result = getLine(ourString);
         System.out.println(result.toString());
     }
 
     public static StringBuilder getLine(String... words) {
-        if (words == null){return new StringBuilder();}
-        if (words.length==0){return new StringBuilder(words[0]);}
+        if (words == null || words.length == 0)
+            return new StringBuilder();
+        if ("".equals(words[0]) || words.length == 1)
+            return new StringBuilder(words[0]);
 
         ArrayList<String> inwords = new ArrayList<>(Arrays.asList(words));
         ArrayList<String> outwords = new ArrayList<>();
@@ -83,10 +80,9 @@ public class Solution {
                 for (int j = step; j < inwordscopy.size(); j++)
                 {
                     String currentelement = inwordscopy.get(j);
-                    System.out.println("текущий элемент " + currentelement + " " + step);
+                    System.out.println("currentelement " + currentelement + " " + step);
                     if (readElemets.get(j)== false){
-                        if (startword.toLowerCase().charAt(0) == currentelement.toLowerCase().charAt(currentelement.length()-1)){
-//if (startword.toLowerCase().charAt(0) == currentelement.toLowerCase().charAt(currentelement.length()-1)){
+                        if (startword.toLowerCase().charAt(startword.length()-1) == currentelement.toLowerCase().charAt(0)){
                             outwords.add(currentelement);
                             readElemets.put(j, true);
                             startword = currentelement;
@@ -95,48 +91,67 @@ public class Solution {
                             break;
                         }
                         else if (j == inwordscopy.size()-1){
-                            if (inwordscopy.size() == outwords.size()-1){
-                                break breakpoint;
+                            if (inwords.size() == outwords.size()){break breakpoint;}
+                            if (step == inwordscopy.size()-1 && outwords.size()==1){break loop;}
+                            //if (outwords.size()==1){break;}
+                            if (previousSteps.size() !=0)
+                            {
+                                step = previousSteps.pop() + 1;
                             }
-                            else {
-                                step = previousSteps.pop()+1;
-                                readElemets.put(step-1,false);
-                                if (step>= inwordscopy.size()){break loop;}
-                                else {startword = inwordscopy.get(previousSteps.peek());}
-                                outwords.remove(outwords.size()-1);
-                                if (outwords.size()==1){
-                                    step = 0;
-                                    break loop;}
-                                break;
+                            else{
+                                step = 0;
                             }
+                            readElemets.put(step-1,false);
+                            //if (step>= inwordscopy.size()){break loop;}
+                            System.out.println("test");
+                            if (previousSteps.size()!=0){startword = inwordscopy.get(previousSteps.peek());}
+                            else {startword = outwords.get(0); }
+                            outwords.remove(outwords.size()-1);
+                            if (outwords.size()==0){
+                                step = 0;
+                                break loop;}
+                            if (outwords.size()==1){
+                                //step = 1;
+                                break;}
+                            break;
                         }
                     }
 
                     else if (j == inwordscopy.size()-1){
-                        if (inwordscopy.size() == outwords.size()-1){
-                            break breakpoint;
+                        if (inwords.size() == outwords.size()){break breakpoint;}
+                        if (step == inwordscopy.size()-1 && outwords.size()==1){break loop;}
+                        //if (outwords.size()==1){break;}
+                        if (previousSteps.size() !=0)
+                        {
+                            step = previousSteps.pop() + 1;
                         }
-                        else {
-                            step = previousSteps.pop()+1;
-                            readElemets.put(step-1,false);
-                            if (step>= inwordscopy.size()){break loop;}
-                            else {startword = inwordscopy.get(previousSteps.peek());}
-                            outwords.remove(outwords.size()-1);
-                            if (outwords.size()==1){
-                                step = 0;
-                                break loop;}
-                            break;
+                        else{
+                            step = 0;
                         }
+                        readElemets.put(step-1,false);
+                        //if (step>= inwordscopy.size()){break loop;}
+                        System.out.println("test");
+                        if (previousSteps.size()!=0){startword = inwordscopy.get(previousSteps.peek());}
+                        else {startword = outwords.get(0); }
+                        outwords.remove(outwords.size()-1);
+                        if (outwords.size()==0){
+                            step = 0;
+                            break loop;}
+                        if (outwords.size()==1){
+                            //step = 1;
+                            break;}
+                        break;
                     }
                 }
             }
         }
         StringBuilder sb = new StringBuilder();
         for (String ss : outwords){
-            sb.insert(0,ss);
-            sb.insert(0, " ");
+            sb.append(ss);
+            sb.append(" ");
         }
         sb = new StringBuilder(sb.toString().trim());
         return sb;
     }
 }
+
