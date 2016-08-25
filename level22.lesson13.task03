@@ -50,8 +50,6 @@ public class Solution {
     }
 
     public static boolean checkTelNumber(String telNumber) {
-        //return telNumber.matches("\\d.*-.*");
-        //return telNumber.matches("\\+\\d{12}") && telNumber.matches(".*\\d");
         boolean result;
         //7) checking if String contains digit in the end
         result = telNumber.matches(".*\\d");
@@ -60,19 +58,17 @@ public class Solution {
         result = result && telNumberWithoutsighn.matches("\\d*");
         //branching...
         //1) если номер начинается с '+', то он содержит 12 цифр
-        if (telNumber.matches("\\+.*")){
-            result = result && telNumberWithoutsighn.matches("\\d{12}");
-        }
-        //result = result && telNumber.matches("\\+.*") && telNumberWithoutsighn.matches("\\d{12}");
         //2) если номер начинается с цифры или открывающей скобки, то он содержит 10 цифр
-        else if (telNumber.matches("\\d.*") || telNumber.matches("\\(")){
-            result = result && telNumberWithoutsighn.matches("\\d{10}");
-        }
+        result = result && (telNumber.matches("\\+.*") ? telNumberWithoutsighn.matches("\\d{12}") : telNumber.matches("\\d.*") || telNumber.matches("\\(") ? telNumberWithoutsighn.matches("\\d{10}") : true);
         //3) может содержать 0-2 знаков '-', которые не могут идти подряд
         result = result && !telNumber.matches(".*--++.*");
-        //result = result && telNumber.matches(".*\\(");
+        result = result && !telNumber.matches(".*-.+-.+-.*");
+        //4) может содержать 1 пару скобок '(' и ')'  , причем если она есть, то она расположена левее знаков '-'
+        result = result && !telNumber.matches(".*\\).*\\(.*");
+        result = result && !telNumber.matches(".*\\(.*\\).*\\(.*");
+        result = result && !telNumber.matches(".*\\(.*\\).*\\).*");
         //5) checkinf if String containts 3 digits in braces
-        //result = result && telNumber.matches(".*\\(\\d\\d\\d\\).*");
+        result = result && (telNumber.matches(".*\\(.*\\).*") ? telNumber.matches(".*\\(\\d\\d\\d\\).*") : true);
         return result;
     }
 }
