@@ -31,8 +31,6 @@ public class Solution {
     public static void main(String[] args)
     {
         Date dateIN = new Date();
-        String telNumber = "+38(050)1g3-45-67";
-        System.out.println(telNumber.replaceAll("\\+","").replaceAll("\\(","").replaceAll("\\)","").replaceAll("-",""));
         System.out.println("-------------------------------------------------");
         System.out.println(checkTelNumber("+380501234567"));
         System.out.println(checkTelNumber("+38(050)1234567"));
@@ -50,6 +48,7 @@ public class Solution {
     }
 
     public static boolean checkTelNumber(String telNumber) {
+        if (telNumber == null || telNumber.equals("")){return false;}
         boolean result;
         //7) checking if String contains digit in the end
         result = telNumber.matches(".*\\d");
@@ -67,6 +66,7 @@ public class Solution {
         result = result && !telNumber.matches(".*\\).*\\(.*");
         result = result && !telNumber.matches(".*\\(.*\\).*\\(.*");
         result = result && !telNumber.matches(".*\\(.*\\).*\\).*");
+        result = result && !telNumber.matches(".*-.*\\(.*\\).*");
         //5) checkinf if String containts 3 digits in braces
         result = result && (telNumber.matches(".*\\(.*\\).*") ? telNumber.matches(".*\\(\\d\\d\\d\\).*") : true);
         return result;
