@@ -1,0 +1,309 @@
+package com.javarush.test.level27.lesson15.big01.ad;
+
+import com.javarush.test.level27.lesson15.big01.ConsoleHelper;
+
+import java.util.*;
+
+public class AdvertisementManager {
+
+    private final AdvertisementStorage storage = AdvertisementStorage.getInstance();
+    private int timeSeconds;
+
+    public AdvertisementManager(int timeSeconds)
+    {
+        this.timeSeconds = timeSeconds;
+    }
+
+    public void processVideos() {
+
+//Get all permutations it have to be added all sequences shorter then original
+        List<Advertisement> currentAd = storage.list();
+        List<List<Advertisement>> outList = new ArrayList<>();
+        List<List<Advertisement>> testList = findVideoSequences(currentAd, outList);
+        Map<List<Advertisement>, Integer> map = new HashMap<>();
+        for (int i = 0; i < testList.size(); i++)
+        {
+            List<Advertisement> list = testList.get(i);
+            int time = 0;
+            int cost = 0;
+            for (Advertisement ad:
+                    list)
+            {
+                time += ad.getDuration();
+                cost += ad.getAmountPerOneDisplaying();
+            }
+            if (timeSeconds < time){
+                testList.remove(i);
+                i--;
+            }
+            else
+            {
+                map.put(list,cost);
+            }
+        }
+
+//search most expensive lists
+        List<List<Advertisement>> expensiveAdList = new ArrayList<>();
+        int cost = -1;
+
+        Iterator<Map.Entry<List<Advertisement>, Integer>> it = map.entrySet().iterator();
+        while (it.hasNext())
+        {
+            Map.Entry<List<Advertisement>, Integer> pair = it.next();
+            if (cost == -1)
+            {
+                expensiveAdList.add(pair.getKey());
+                cost = pair.getValue();
+            }
+            else if (pair.getValue() > cost)
+            {
+                expensiveAdList.clear();
+                expensiveAdList.add(pair.getKey());
+                cost = pair.getValue();
+            }
+            else if (pair.getValue() == cost)
+            {
+                expensiveAdList.add(pair.getKey());
+            }
+        }
+
+//check other conditions
+        List<Advertisement> list = new ArrayList<>();
+        if (expensiveAdList.size() == 1){
+            list = expensiveAdList.get(0);
+        }
+        else {
+            int length = -1;
+            List<Integer> lengthes = new ArrayList<>(expensiveAdList.size());
+            for (int i = 0; i < expensiveAdList.size(); i++)
+            {
+                for (Advertisement ad:
+                        expensiveAdList.get(i))
+                {
+                    length += ad.getDuration();
+                }
+                lengthes.add(i,length);
+            }
+            for (int i = 0; i < expensiveAdList.size()-1; i++)
+            {
+                if (lengthes.get(i) > lengthes.get(i+1))
+                {
+                    expensiveAdList.remove(i+1);
+                    lengthes.remove(i+1);
+                    i--;
+                }
+            }
+            if (expensiveAdList.size() == 1)
+            {
+                list.clear();
+                list = expensiveAdList.get(0);
+            }
+            else
+            {
+                for (int i = 0; i < expensiveAdList.size() - 1; i++)
+                {
+                    if (expensiveAdList.get(i).size() > expensiveAdList.get(i + 1).size()){
+                        expensiveAdList.remove(i + 1);
+                        i--;
+                    }
+                }
+                    list.clear();
+                    list = expensiveAdList.get(0);
+            }
+        }
+
+
+        Collections.sort(list, new Comparator<Advertisement>() {
+            @Override
+            public int compare(Advertisement o1, Advertisement o2) {
+                int result = Long.compare(o1.getAmountPerOneDisplaying(), o2.getAmountPerOneDisplaying());
+                if (result != 0)
+                    return -result;
+
+                long oneSecondCost1 = o1.getAmountPerOneDisplaying() * 1000 / o1.getDuration();
+                long oneSecondCost2 = o2.getAmountPerOneDisplaying() * 1000 / o2.getDuration();
+
+                return Long.compare(oneSecondCost1, oneSecondCost2);
+            }
+        });
+
+        int timeLeft = timeSeconds;
+        for (Advertisement advertisement : list) {
+            if (timeLeft < advertisement.getDuration()) {
+                continue;
+            }
+
+            ConsoleHelper.writeMessage(advertisement.getName() + " is displaying... "
+                    + advertisement.getAmountPerOneDisplaying() + ", "
+                    + advertisement.getAmountPerOneDisplaying() * 1000 / advertisement.getDuration());
+
+            timeLeft -= advertisement.getDuration();
+            advertisement.revalidate();
+        }
+
+        if (timeLeft == timeSeconds) {
+            throw new NoVideoAvailableException();
+        }
+    }
+
+    public static void main(String[] args)
+    {
+
+        AdvertisementManager adMan = new AdvertisementManager(100);
+
+        List<Advertisement> currentAd = adMan.storage.list();
+        List<List<Advertisement>> outList = new ArrayList<>();
+/*        List<Advertisement> currentAd2 = adMan.storage.list();
+        outList.add(currentAd2);
+        System.out.println(outList.contains(currentAd));
+        System.out.println(outList.contains(currentAd2));
+
+        List<Advertisement> videos = new ArrayList<>();
+        List<Advertisement> videos2 = new ArrayList<>();
+        System.out.println(videos.equals(videos2));
+        Object someContent = new Object();
+        videos.add(new Advertisement(someContent, "First Video", 5000, 100, 3 * 60)); // 3 min
+        videos.add(new Advertisement(someContent, "Second Video", 100, 10, 15 * 60)); //15 min
+        videos.add(new Advertisement(someContent, "Third Video", 400, 2, 10 * 60));   //10 min
+        outList.add(videos);
+        System.out.println(outList.contains(videos));
+        Object someContent2 = new Object();
+        videos2.add(new Advertisement(someContent2, "First Video", 5000, 100, 3 * 60)); // 3 min
+        videos2.add(new Advertisement(someContent2, "Second Video", 100, 10, 15 * 60)); //15 min
+        videos2.add(new Advertisement(someContent2, "Third Video", 400, 2, 10 * 60));   //10 min
+        System.out.println(outList.contains(videos2));
+        System.out.println(videos.equals(videos2));
+        System.out.println((new Advertisement(someContent, "First Video", 5000, 100, 3 * 60)).equals(new Advertisement(someContent, "First Video", 5000, 100, 3 * 60)));
+        List<Advertisement> videos3 = new ArrayList<>(videos2);
+        System.out.println(videos2.equals(videos3));*/
+
+        ////////////////// test findVideoSequences
+        List<List<Advertisement>> testList = adMan.findVideoSequences(currentAd, outList);
+        System.out.println("testList.size() " + " " + testList.size());
+        for (int i = 0; i < testList.size(); i++)
+        {
+            for (int j = 0; j < testList.get(i).size(); j++)
+            {
+                System.out.print(testList.get(i).get(j).getName());
+                System.out.print(" ");
+            }
+            System.out.println();
+            System.out.println("_________________________________________");
+        }
+
+
+        ///////////////////test findAnotherPermutation
+/*        AdvertisementManager adMan = new AdvertisementManager(100);
+
+        List<Advertisement> currentAd = adMan.storage.list();
+        ArrayDeque<Advertisement> adStack = new ArrayDeque<>();
+        List<List<Advertisement>> outList = new ArrayList<>();
+
+        List<List<Advertisement>> testList = adMan.findAnotherPermutation(currentAd,
+            adStack, outList);
+        System.out.println("testList.size() " + " " + testList.size());
+        for (int i = 0; i < testList.size(); i++)
+        {
+            for (int j = 0; j < testList.get(i).size(); j++)
+            {
+                System.out.print(testList.get(i).get(j).getName());
+                System.out.print(" ");
+            }
+            System.out.println();
+            System.out.println("_________________________________________");
+        }*/
+    }
+
+    List<List<Advertisement>> findAnotherPermutation(List<Advertisement> currentAd, ArrayDeque<Advertisement> adStack, List<List<Advertisement>> outList){
+        for (int i = 0; i < currentAd.size(); i++)
+        {
+            List<Advertisement> currentAdCopy = new ArrayList<>(currentAd);
+            ArrayDeque<Advertisement> adStackCopy = new ArrayDeque<>(adStack);
+            adStackCopy.add(currentAdCopy.get(i));
+            currentAdCopy.remove(i);
+            if (currentAdCopy.size() == 0){
+                outList.add(new ArrayList<Advertisement>(adStackCopy));
+                currentAdCopy.add(i,adStackCopy.poll());
+                return outList;
+            }
+            else
+            {
+                outList = findAnotherPermutation(currentAdCopy, adStackCopy, outList);
+            }
+        }
+        return outList;
+    }
+
+    List<List<Advertisement>> findVideoSequences(List<Advertisement> currentAd, List<List<Advertisement>> outList)
+    {
+        if (currentAd.size() == 0){
+            return outList;
+        }
+        if (outList.size() == 0) {
+            outList.add(currentAd);
+        }
+/*        if (currentAd.size() == 1) {
+            if (!outList.contains(currentAd)){
+                outList.add(currentAd);
+                System.out.println("added");
+            }
+            return outList;
+        }*/
+        List<Advertisement> currentAdCopy = new ArrayList<>(currentAd);
+        for (int i = 0; i < currentAdCopy.size(); i++)
+        {
+            Advertisement copy = currentAdCopy.get(i);
+            currentAdCopy.remove(i);
+//            if (currentAdCopy.size() == 0)
+//            {
+//                outList.add(currentAd);
+/*                System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+                for (int j = 0; j < currentAd.size(); j++)
+                {
+                    System.out.print(currentAd.get(j).getName() + " ");
+                }
+                System.out.println();
+                System.out.println("added");
+                System.out.println("+++++++++++++++++++++++++++++++++++++++++");*/
+
+//                return outList;
+//            }
+
+            outList = findVideoSequences(currentAdCopy,outList);
+/*            System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+            for (int j = 0; j < currentAdCopy.size(); j++)
+            {
+                System.out.print(currentAdCopy.get(j).getName() + " ");
+            }
+            System.out.println();
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++");*/
+//            if (currentAdCopy.size() != 0 && !outList.contains(currentAdCopy)){
+                outList.add(currentAdCopy);
+/*                System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+                for (int j = 0; j < currentAdCopy.size(); j++)
+                {
+                    System.out.print(currentAdCopy.get(j).getName() + " ");
+                }
+                System.out.println();
+                System.out.println("added");
+                System.out.println("+++++++++++++++++++++++++++++++++++++++++");*/
+
+//            }
+            currentAdCopy.add(i,copy);
+        }
+
+
+/*        for (int i = 0; i < outList.size() - 1; i++)
+        {
+            for (int j = 0; j < outList.size() - 1; j++)
+            {
+                if (outList.get(i).equals(outList.get(i + 1))){
+                    outList.remove(i + 1);
+                    i--;
+                }
+            }
+        }*/
+
+        return outList;
+    }
+}
