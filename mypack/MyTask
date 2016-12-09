@@ -1,0 +1,129 @@
+package com.javarush.test.mypack;
+
+import java.nio.charset.Charset;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Created by work on 04.05.2016.
+ *
+ * Return the number of total permutations of the provided string that don't have
+ * repeated consecutive letters. Assume that all characters in the provided string are each unique.
+ *
+ * For example, aab should return 2 because it has 6 total permutations (aab, aab, aba, aba, baa, baa),
+ * but only 2 of them (aba and aba) don't have the same letter (in this case a) repeating.
+ *
+ */
+public class MyTask
+{
+    public static void main(String [] args){
+        //исходная строка
+        String ss = "aab";
+        //далее чтобы нам легче было искать все перестановки, мы предтавим нашу строку в виде массива символов и уже в массиве будем преставлять местами буквы
+        char [] cc = ss.toCharArray();
+        //с массивом работать неудобно, поэтому данные из массива я перемещаю в список (динамический массив), чтобы можно было без проблем одним методом удалять элемент или добавлять новый
+        List<Character> currentAd = new ArrayList<>();
+        for (int i = 0; i < cc.length; i++)
+        {
+            currentAd.add(cc[i]);
+        }
+        // это очередь, в нёё будем складывать по одному элементу строчки, а как только в строчке закончатся буквы, добавим эту очередь в outlist
+        ArrayDeque<Character> adStack = new ArrayDeque<>();
+        // Это список куда мы положим все итоговые строки, складывать их будем в виде динамичкских списков List<Character>, так как со строками нам работать неудобно
+        List<List<Character>> outList = new ArrayList<>();
+        //это 2 техническb[ строкb для вызова метода
+        MyTask mm = new MyTask();
+        List<List<Character>> testList = mm.findAnotherPermutation(currentAd, adStack, outList);
+
+        //выводим в консоль все полученные перетановки коих получилось n!
+        for (int i = 0; i < testList.size(); i++)
+        {
+            for (int j = 0; j < testList.get(i).size(); j++)
+            {
+                System.out.print(testList.get(i).get(j));
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+
+        //преобразовываем все списки с символами обратно в строки
+        ArrayList<String> outString = new ArrayList<>();
+        for (int i = 0; i < outList.size(); i++)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < outList.get(i).size(); j++)
+            {
+                sb.append(outList.get(i).get(j));
+            }
+            outString.add(sb.toString());
+        }
+
+        //здесь удаляем строки, где есть два подряд одинаковых символа, к сожалению с помощью регулярных выражений не смог нормально это сделать
+        for (int i = 0; i < outString.size(); i++)
+        {
+            char [] ccc = outString.get(i).toCharArray();
+            for (int j = 0; j < ccc.length - 1; j++)
+            {
+                if (ccc[j] == ccc[j + 1])
+                {
+                    outString.remove(i);
+                    i--;
+                    break;
+                }
+            }
+        }
+
+        System.out.println("final count permutations = " + outString.size());
+    }
+
+    List<List<Character>> findAnotherPermutation(List<Character> currentAd, ArrayDeque<Character> adStack, List<List<Character>> outList){
+        //запускаем цикл по currentAd - это наши переданные символы строки a a b
+        for (int i = 0; i < currentAd.size(); i++)
+        {
+            // создаём копию наших символов
+            List<Character> currentAdCopy = new ArrayList<>(currentAd);
+            // создаём копию стека
+            ArrayDeque<Character> adStackCopy = new ArrayDeque<>(adStack);
+            // добавляем в стек i-ый символ
+            adStackCopy.add(currentAdCopy.get(i));
+            // и удаляем этот симвло из копии строки
+            currentAdCopy.remove(i);
+            //далее следует условие выхода из рекурсии
+            if (currentAdCopy.size() == 0){
+                //если у нас на этом ходу список остался пуст, значит мы взяли все символы из строки
+                //все символы находятся в стеке их добавляем в наш выходной список
+                outList.add(new ArrayList<Character>(adStackCopy));
+                //вытаскиваем из стека строку и кладём её обратно в нашу копию символов
+                currentAdCopy.add(i,adStackCopy.poll());
+                //возвращаем значение
+                return outList;
+            }
+            else
+            {
+                //ну а если у нас ещё есть буквы, то вызываем метод снова и его результат кладём в выходной список outList
+                outList = findAnotherPermutation(currentAdCopy, adStackCopy, outList);
+            }
+        }
+        // после того как мы прошлись по всем буквам возвращаем список туда, откуда он был вызван.
+        /* объясняю алгоритм (в скобках пишу содержание каждого объекта)
+        * Запускается метод findAnotherPermutation
+        * он запускает цикл по currentAd [a a b]
+        * удаляет первый элемент currentAd [a b] и кладёт его в adStack [a]  
+        * проверяет есть ли в списке currentAd буквы, а они там ещё есть и запускает метод ещё раз и кладёт его результаты в outlist
+        * замечу, что ссылка на outlist везде одинаковая, поэтому на всех шагах этот список у нас пополняется и в конце возвращается именно он
+        * 
+        * ....
+        * 
+        * Дошли до конца списка в итоге currentAd [ ] а adStack [a a b]
+        * тут метод видит, что список пуст и пополняет outlist полученным набором из adStack [a a b] и возвращает outlist
+        * Далее рекурсия возвращается на шаг наза, а где шаг назад?
+        * А это currentAd [a  b] а adStack [a], но теперь, шаг i = 1
+        * Поэтому следующая комбинация, которая добавится в outlist будет [a b a]
+        * Далее думаю понятно
+        * */
+        
+        return outList;
+    }
+}
