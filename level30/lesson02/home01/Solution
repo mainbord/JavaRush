@@ -1,0 +1,46 @@
+package com.javarush.test.level30.lesson02.home01;
+
+/* Конвертер систем счислений
+Реализуйте логику метода convertNumberToOtherNumerationSystem, который должен переводить число number.getDigit()
+из одной системы счисления(numerationSystem) в другую (expectedNumerationSystem)
+бросьте NumberFormatException, если переданное число некорректно, например, число "120" с системой счисления 2
+Валидация для - number.getDigit() - целое не отрицательное
+Метод main не участвует в тестировании
+*/
+public class Solution {
+    public static void main(String[] args) {
+        Number number = new Number(NumerationSystemType._10, "6");
+        Number result = convertNumberToOtherNumerationSystem(number, NumerationSystemType._2);
+        System.out.println(result);    //expected 110
+        System.out.println(convertNumberToOtherNumerationSystem(new Number(NumerationSystemType._8,"543"), NumerationSystemType._10));
+    }
+
+    public static Number convertNumberToOtherNumerationSystem(Number number, NumerationSystem expectedNumerationSystem) {
+        int aa = 0;
+        if (number.getNumerationSystem().getNumerationSystemIntValue() > expectedNumerationSystem.getNumerationSystemIntValue())
+        {
+            //А здесь делим
+            double dd = Double.parseDouble(number.getDigit());
+
+            StringBuilder sb= new StringBuilder();
+            while (true){
+                double ost = dd % expectedNumerationSystem.getNumerationSystemIntValue();
+                sb.append(ost);
+                if (ost == 0){break;}
+                else {
+                    dd = dd / expectedNumerationSystem.getNumerationSystemIntValue();
+                }
+            }
+            aa = (int)dd;
+        }
+        else {
+            char [] cc = number.getDigit().toCharArray();
+            for (int i = cc.length-1, temp = 0; i >= 0; i--, temp++)
+            {
+                aa += (int) (Character.getNumericValue(cc[i]) * Math.pow(number.getNumerationSystem().getNumerationSystemIntValue(),temp));
+            }
+
+        }
+        return new Number(expectedNumerationSystem,String.valueOf(aa));
+    }
+}
