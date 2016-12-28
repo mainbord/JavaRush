@@ -1,5 +1,7 @@
 package com.javarush.test.level30.lesson02.home01;
 
+import java.math.BigInteger;
+
 /* Конвертер систем счислений
 Реализуйте логику метода convertNumberToOtherNumerationSystem, который должен переводить число number.getDigit()
 из одной системы счисления(numerationSystem) в другую (expectedNumerationSystem)
@@ -9,38 +11,68 @@ package com.javarush.test.level30.lesson02.home01;
 */
 public class Solution {
     public static void main(String[] args) {
-        Number number = new Number(NumerationSystemType._10, "6");
-        Number result = convertNumberToOtherNumerationSystem(number, NumerationSystemType._2);
+        Number number = new Number(NumerationSystemType._16, "G");
+        Number result = convertNumberToOtherNumerationSystem(number, NumerationSystemType._10);
         System.out.println(result);    //expected 110
-        System.out.println(convertNumberToOtherNumerationSystem(new Number(NumerationSystemType._8,"543"), NumerationSystemType._10));
     }
 
     public static Number convertNumberToOtherNumerationSystem(Number number, NumerationSystem expectedNumerationSystem) {
+        BigInteger bigInteger = new BigInteger(number.getDigit(), number.getNumerationSystem().getNumerationSystemIntValue());
+        String str = bigInteger.toString(expectedNumerationSystem.getNumerationSystemIntValue());
+        return new Number(expectedNumerationSystem, str);
+/*
+*
+*
         int aa = 0;
-        if (number.getNumerationSystem().getNumerationSystemIntValue() > expectedNumerationSystem.getNumerationSystemIntValue())
+        char [] cc = number.getDigit().toCharArray();
+        for (int i = cc.length-1, temp = 0; i >= 0; i--, temp++)
         {
-            //А здесь делим
-            double dd = Double.parseDouble(number.getDigit());
-
-            StringBuilder sb= new StringBuilder();
-            while (true){
-                double ost = dd % expectedNumerationSystem.getNumerationSystemIntValue();
-                sb.append(ost);
-                if (ost == 0){break;}
-                else {
-                    dd = dd / expectedNumerationSystem.getNumerationSystemIntValue();
+            int ch = 0;
+            if (Character.isAlphabetic(cc[i]))
+            {
+                Character ch1 = cc[i];
+                ch1 = Character.toLowerCase(ch1);
+                if (number.getNumerationSystem().getNumerationSystemIntValue() <= 10){ throw new NumberFormatException();}
+                ch = Integer.valueOf(ch1.toString(),number.getNumerationSystem().getNumerationSystemIntValue());
+                if (ch >= number.getNumerationSystem().getNumerationSystemIntValue()){ throw new NumberFormatException();}
+            }
+            else {
+                ch = Character.getNumericValue(cc[i]);
+                if (number.getNumerationSystem().getNumerationSystemIntValue() <= 10){
+                    if (ch >= number.getNumerationSystem().getNumerationSystemIntValue()){ throw new NumberFormatException();}
                 }
             }
-            aa = (int)dd;
+            aa += (int) (ch * Math.pow(number.getNumerationSystem().getNumerationSystemIntValue(),temp));
+        }
+        if (expectedNumerationSystem.getNumerationSystemIntValue() == 10){
+            return new Number(expectedNumerationSystem,String.valueOf(aa));
         }
         else {
-            char [] cc = number.getDigit().toCharArray();
-            for (int i = cc.length-1, temp = 0; i >= 0; i--, temp++)
-            {
-                aa += (int) (Character.getNumericValue(cc[i]) * Math.pow(number.getNumerationSystem().getNumerationSystemIntValue(),temp));
-            }
+            double dd = Double.parseDouble(number.getDigit());
+            StringBuilder sb = new StringBuilder();
+            while (true){
+                double ost = dd % expectedNumerationSystem.getNumerationSystemIntValue();
+                if (expectedNumerationSystem.getNumerationSystemIntValue() > 10){
+                    System.out.println("__ " + (int)ost + " " + (Integer.toHexString((int)ost)).toUpperCase());
+                    sb.insert(0, Integer.toHexString((int)ost));
+                }
+                else
+                {
+                    sb.insert(0, (int) ost);
+                }
+                dd = dd / expectedNumerationSystem.getNumerationSystemIntValue();
+                if (((int)dd) < expectedNumerationSystem.getNumerationSystemIntValue()){
+                    if (expectedNumerationSystem.getNumerationSystemIntValue() > 10){
 
-        }
-        return new Number(expectedNumerationSystem,String.valueOf(aa));
+                        sb.insert(0, (Integer.toHexString((int)dd)).toUpperCase());
+                    }
+                    else
+                    {
+                        sb.insert(0, (int)dd);
+                    }
+                    break;
+                }
+            }
+            return new Number(expectedNumerationSystem,String.valueOf(sb.toString().toUpperCase()));*/
     }
 }
