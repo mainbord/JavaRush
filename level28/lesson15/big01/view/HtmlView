@@ -7,9 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 
@@ -33,9 +31,13 @@ public class HtmlView implements View {
 
         try
         {
-            Document doc = Jsoup.parse(new File("C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\vacancies.html"),"utf-8");
+            //win
+            //Document doc = Jsoup.parse(new File("C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\vacancies.html"),"utf-8");
+            //linux
+            Document doc = Jsoup.parse(new File("/home/mainbord/IdeaProjects/JavaRushHomeWork/src/com/javarush/test/level28/lesson15/big01/view/vacancies.html"),"utf-8");
             Elements template;
             template = doc.getElementsByClass("template").clone();
+            System.out.println(doc.getElementsByClass("template").size());
             template.removeAttr("style");
             template.removeClass("template");
 
@@ -89,50 +91,34 @@ public class HtmlView implements View {
     }
 
     private String getUpdatedFileContent(List<Vacancy> vacancies) {
-        Document docVac;
+        System.out.println("yes");
+        Document document;
         try
         {
-            docVac = getDocument();
+            document = getDocument();
             //* 2. Получи элемент, у которого есть класс template.
             Elements template;
             //Сделай копию этого объекта, удали из нее атрибут "style" и класс "template".
-            template = docVac.getElementsByClass("template").clone();
+            template = document.getElementsByClass("template").clone();
             template.removeAttr("style");
             template.removeClass("template");
 
             //3. Удали все добавленные ранее вакансии. У них единственный класс "vacancy".
-            Document docBackup = Jsoup.parse(new File("./src/" + this.getClass().getPackage().getName().replace('.', '/') + "/backup.html"),"utf-8");
-            for (Element el1 : docBackup.getElementsByClass("vacancy")){
-                if (el1.className().equals("vacancy")){el1.remove();}
+            for (Element element : document.getElementsByClass("vacancy")){
+                if (element.className().equals("vacancy")){
+                    element.remove();
+                    System.out.println("Element removed successfully");
+                }
             }
-
-
-
             for(Vacancy vac
                     : vacancies){
                 template.first().getElementsByClass("city").first().prependText(vac.getCity());
                 template.first().getElementsByClass("companyName").first().prependText(vac.getCompanyName());
                 template.first().getElementsByClass("salary").first().prependText(vac.getSalary());
                 template.first().getElementsByTag("a").first().prependText(vac.getTitle());
-                template.first().getElementsByTag("a").first().attr("href", "ya.ru");
-                docVac.before(template.text());
+                template.first().getElementsByTag("a").first().attr("href", vac.getUrl());
+                document.getElementsByClass("template").first().before(template.html());
             }
-
-            // здесь или в конце цикла нужно сделать так чтобы этот шаблонный элемент вставился в vanacsies
-
-/*
-4. В цикле для каждой вакансии:
-4.1. склонируй шаблон тега, полученного в п.2. Метод clone.
-4.2. получи элемент, у которого есть класс "city". Запиши в него название города из вакансии.
-4.3. получи элемент, у которого есть класс "companyName". Запиши в него название компании из вакансии.
-4.4. получи элемент, у которого есть класс "salary". Запиши в него зарплату из вакансии.
-4.5. получи элемент-ссылку с тегом a. Запиши в него название вакансии(title). Установи реальную ссылку на вакансию вместо href="url"
-4.6. добавь outerHtml элемента, в который ты записывал данные вакансии,
-непосредственно перед шаблоном <tr class="vacancy template" style="display: none">
-*/
-
-
-
         }
         catch (IOException e)
         {
@@ -140,13 +126,14 @@ public class HtmlView implements View {
             return "Some exception occurred";
         }
 //5. Верни html код всего документа в качестве результата работы метода.
-        return docVac.html();
+        return document.html();
     }
 
     private void updateFile(String fileContent) {
-        try(FileWriter fileWriter = new FileWriter(filePath))
+        try(OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(filePath),"UTF-8"))
         {
             fileWriter.write(fileContent);
+            fileWriter.flush();
         }
         catch (IOException e)
         {
@@ -155,7 +142,7 @@ public class HtmlView implements View {
     }
 
     public void userCitySelectEmulationMethod() {
-        controller.onCitySelect("Moscow");
+        controller.onCitySelect("Odessa");
     }
 
     protected Document getDocument() throws IOException{
