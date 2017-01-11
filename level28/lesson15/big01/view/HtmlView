@@ -33,11 +33,29 @@ public class HtmlView implements View {
 
         try
         {
-            Document doc = Jsoup.parse(new File("/home/mainbord/IdeaProjects/JavaRushHomeWork/src/com/javarush/test/level28/lesson15/big01/view/vacancies.html"),"utf-8");
-            Elements el;
-            el = doc.getElementsByClass("template").clone();
-            el.removeAttr("style");
-            el.removeClass("template");
+            Document doc = Jsoup.parse(new File("C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\vacancies.html"),"utf-8");
+            Elements template;
+            template = doc.getElementsByClass("template").clone();
+            template.removeAttr("style");
+            template.removeClass("template");
+
+            System.out.println("++++++++++++++++++++++++++++++");
+            System.out.println(doc.getElementsByClass("template").first().before("<div></div>"));
+            //doc.select("[vacancy template").first().before("<div></div>");
+            System.out.println(doc.html());
+            /*            template.first().getElementsByTag("a").first().attr("href", "ya.ru");
+            System.out.println(template);*/
+            System.out.println("++++++++++++++++++++++++++++++");
+
+            System.out.println(template.get(0).getElementsByClass("city").get(0));
+            System.out.println();
+            System.out.println();
+            System.out.println("_______");
+            System.out.println(template.get(0).getElementsByClass("city").get(0).prependText("________"));
+            System.out.println("_______");
+            System.out.println();
+            System.out.println();
+
             for (Element el1 : doc.getElementsByClass("vacancy")){
                 if (el1.className().equals("vacancy")){el1.remove();}
             }
@@ -71,46 +89,38 @@ public class HtmlView implements View {
     }
 
     private String getUpdatedFileContent(List<Vacancy> vacancies) {
-        Document doc;
+        Document docVac;
         try
         {
-            doc = getDocument();
+            docVac = getDocument();
             //* 2. Получи элемент, у которого есть класс template.
-            Elements el;
+            Elements template;
             //Сделай копию этого объекта, удали из нее атрибут "style" и класс "template".
-            el = doc.getElementsByClass("template").clone();
-            el.removeAttr("style");
-            el.removeClass("template");
+            template = docVac.getElementsByClass("template").clone();
+            template.removeAttr("style");
+            template.removeClass("template");
+
             //3. Удали все добавленные ранее вакансии. У них единственный класс "vacancy".
-            for (Element el1 : doc.getElementsByClass("vacancy")){
+            Document docBackup = Jsoup.parse(new File("./src/" + this.getClass().getPackage().getName().replace('.', '/') + "/backup.html"),"utf-8");
+            for (Element el1 : docBackup.getElementsByClass("vacancy")){
                 if (el1.className().equals("vacancy")){el1.remove();}
             }
 
 
-            Document doc1;
-            doc1 = Jsoup.connect("./src/" + this.getClass().getPackage().getName().replace('.', '/') + "backup.html")
-                    .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36")
-                    .referrer("none")
-                    .get();
-            doc1.remove();
-
 
             for(Vacancy vac
-                    :vacancies){
+                    : vacancies){
+                template.first().getElementsByClass("city").first().prependText(vac.getCity());
+                template.first().getElementsByClass("companyName").first().prependText(vac.getCompanyName());
+                template.first().getElementsByClass("salary").first().prependText(vac.getSalary());
+                template.first().getElementsByTag("a").first().prependText(vac.getTitle());
+                template.first().getElementsByTag("a").first().attr("href", "ya.ru");
+                docVac.before(template.text());
+            }
 
-        }
+            // здесь или в конце цикла нужно сделать так чтобы этот шаблонный элемент вставился в vanacsies
 
 /*
-* 2. Получи элемент, у которого есть класс template.
-Сделай копию этого объекта, удали из нее атрибут "style" и класс "template".
-Используй этот элемент в качестве шаблона для добавления новой строки в таблицу вакансий.
-
-3. Удали все добавленные ранее вакансии. У них единственный класс "vacancy".
-В файле backup.html это одна вакансия - Junior Java Developer.
-Нужно удалить все теги tr, у которых class="vacancy".
-Но тег tr, у которого class="vacancy template", не удаляй.
-Используй метод remove.
-
 4. В цикле для каждой вакансии:
 4.1. склонируй шаблон тега, полученного в п.2. Метод clone.
 4.2. получи элемент, у которого есть класс "city". Запиши в него название города из вакансии.
@@ -119,28 +129,7 @@ public class HtmlView implements View {
 4.5. получи элемент-ссылку с тегом a. Запиши в него название вакансии(title). Установи реальную ссылку на вакансию вместо href="url"
 4.6. добавь outerHtml элемента, в который ты записывал данные вакансии,
 непосредственно перед шаблоном <tr class="vacancy template" style="display: none">
-
-5. Верни html код всего документа в качестве результата работы метода.*/
-
-
-            Elements elements = doc.select("[data-qa=vacancy-serp__vacancy]");
-            for (Element element : elements) {
-                Element titleElement = element.select("[data-qa=vacancy-serp__vacancy-title]").first();
-                String title = titleElement.text();
-
-                Element salaryElement = element.select("[data-qa=vacancy-serp__vacancy-compensation]").first();
-                String salary = "";
-                if (salaryElement != null) {
-                    salary = salaryElement.text();
-                }
-                String city = element.select("[data-qa=vacancy-serp__vacancy-address]").first().text();
-                String companyName = element.select("[data-qa=vacancy-serp__vacancy-employer]").first().text();
-                String siteName = "http://hh.ua/";
-                String url = titleElement.attr("href");
-            }
-
-
-
+*/
 
 
 
@@ -150,8 +139,8 @@ public class HtmlView implements View {
             e.printStackTrace();
             return "Some exception occurred";
         }
-
-        return doc.html();
+//5. Верни html код всего документа в качестве результата работы метода.
+        return docVac.html();
     }
 
     private void updateFile(String fileContent) {
