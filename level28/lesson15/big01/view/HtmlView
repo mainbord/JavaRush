@@ -23,18 +23,26 @@ public class HtmlView implements View {
 
     @Override
     public void update(List<Vacancy> vacancies) {
-        updateFile(getUpdatedFileContent(vacancies));
+
+        try
+        {
+            updateFile(getUpdatedFileContent(vacancies));
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
     }
 
-    public static void main(String[] args)
+/*    public static void main(String[] args)
     {
 
         try
         {
             //win
-            //Document doc = Jsoup.parse(new File("C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\vacancies.html"),"utf-8");
+            Document doc = Jsoup.parse(new File("C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\vacancies.html"),"utf-8");
             //linux
-            Document doc = Jsoup.parse(new File("/home/mainbord/IdeaProjects/JavaRushHomeWork/src/com/javarush/test/level28/lesson15/big01/view/vacancies.html"),"utf-8");
+            //Document doc = Jsoup.parse(new File("/home/mainbord/IdeaProjects/JavaRushHomeWork/src/com/javarush/test/level28/lesson15/big01/view/vacancies.html"),"utf-8");
             Elements template;
             template = doc.getElementsByClass("template").clone();
             System.out.println(doc.getElementsByClass("template").size());
@@ -45,8 +53,8 @@ public class HtmlView implements View {
             System.out.println(doc.getElementsByClass("template").first().before("<div></div>"));
             //doc.select("[vacancy template").first().before("<div></div>");
             System.out.println(doc.html());
-            /*            template.first().getElementsByTag("a").first().attr("href", "ya.ru");
-            System.out.println(template);*/
+            *//*            template.first().getElementsByTag("a").first().attr("href", "ya.ru");
+            System.out.println(template);*//*
             System.out.println("++++++++++++++++++++++++++++++");
 
             System.out.println(template.get(0).getElementsByClass("city").get(0));
@@ -71,7 +79,7 @@ public class HtmlView implements View {
             e.printStackTrace();
         }
 
-/*        Document doc1;
+*//*        Document doc1;
         String filePath = "C:\\Users\\work\\IdeaProjects\\JavaRushHomeWork\\src\\com\\javarush\\test\\level28\\lesson15\\big01\\view\\backup.html";
         System.out.println("filePath = " + filePath);
         try
@@ -87,57 +95,57 @@ public class HtmlView implements View {
         catch (IOException e)
         {
             e.printStackTrace();
-        }*/
-    }
+        }*//*
+    }*/
 
     private String getUpdatedFileContent(List<Vacancy> vacancies) {
-        System.out.println("yes");
         Document document;
+
         try
         {
+
             document = getDocument();
             //* 2. Получи элемент, у которого есть класс template.
-            Elements template;
+            Element template;
             //Сделай копию этого объекта, удали из нее атрибут "style" и класс "template".
-            template = document.getElementsByClass("template").clone();
+            template = document.getElementsByClass("template").first().clone();
             template.removeAttr("style");
             template.removeClass("template");
 
             //3. Удали все добавленные ранее вакансии. У них единственный класс "vacancy".
-            for (Element element : document.getElementsByClass("vacancy")){
+            document.getElementsByAttributeValue("class","vacancy").remove();
+/*            for (Element element : document.getElementsByClass("vacancy")){
                 if (element.className().equals("vacancy")){
                     element.remove();
-                    System.out.println("Element removed successfully");
                 }
-            }
+            }*/
             for(Vacancy vac
                     : vacancies){
-                template.first().getElementsByClass("city").first().prependText(vac.getCity());
-                template.first().getElementsByClass("companyName").first().prependText(vac.getCompanyName());
-                template.first().getElementsByClass("salary").first().prependText(vac.getSalary());
-                template.first().getElementsByTag("a").first().prependText(vac.getTitle());
-                template.first().getElementsByTag("a").first().attr("href", vac.getUrl());
-                document.getElementsByClass("template").first().before(template.html());
+                Element vacancyElement = template.clone();
+                vacancyElement.getElementsByClass("city").first().text(vac.getCity());
+                vacancyElement.getElementsByClass("companyName").first().text(vac.getCompanyName());
+                vacancyElement.getElementsByClass("salary").first().text(vac.getSalary());
+                vacancyElement.getElementsByTag("a").first().text(vac.getTitle());
+                vacancyElement.getElementsByTag("a").first().attr("href", vac.getUrl());
+                template.before(vacancyElement.outerHtml());
             }
+
+//5. Верни html код всего документа в качестве результата работы метода.
         }
         catch (IOException e)
         {
             e.printStackTrace();
             return "Some exception occurred";
         }
-//5. Верни html код всего документа в качестве результата работы метода.
         return document.html();
     }
 
-    private void updateFile(String fileContent) {
+    private void updateFile(String fileContent) throws IOException{
+//        try(FileWriter fileWriter = new FileWriter(filePath))
         try(OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(filePath),"UTF-8"))
         {
             fileWriter.write(fileContent);
             fileWriter.flush();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
         }
     }
 
