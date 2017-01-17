@@ -21,16 +21,18 @@ import java.util.List;
 public class Solution {
     public static void main(String[] args) {
 
-/*        File file1 = new File("C:\\drivers\\WLAN Driver (Realtek, Atheros, Broadcom)");
-        System.out.println(file1.isDirectory() + " " + file1.getParent());*/
+        File file1 = new File("C:\\123\\222");
+        System.out.println(file1.isDirectory() + " " + file1.listFiles().length);
 /*        System.out.println(args[0] + "   " + args[1]);*/
 
         String path = args[0];
         String resultFileAbsolutePath = args[1];
 
         File filePath = new File(path);
+        System.out.println("____ " + filePath + " " + filePath.getName());
 
-        List<File> listOfFiles = checkFile(filePath);
+        List<File> listOfFiles = new ArrayList<>();
+        List<File> list = checkFile(filePath, listOfFiles);
         Comparator<File> compareByName = new Comparator<File>()
         {
             @Override
@@ -39,53 +41,64 @@ public class Solution {
                 return o1.getName().compareTo(o2.getName());
             }
         };
-        Collections.sort(listOfFiles,compareByName);
+        Collections.sort(list,compareByName);
         File resultFile = new File(resultFileAbsolutePath);
         resultFile.renameTo(new File(resultFile.getParent() + File.separator + "allFilesContent.txt"));
 
-        for (File file:
-                listOfFiles)
-        {
-            try(FileWriter fileWriter = new FileWriter(resultFile);
-                BufferedReader fileReader = new BufferedReader(new FileReader(file)))
+        System.out.println();
+        System.out.println();
+        try (PrintWriter fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(resultFile)))){
+            for (File file:
+                    list)
             {
-                while (fileReader.ready())
+                //System.out.println(file);
+                try(BufferedReader fileReader = new BufferedReader(new FileReader(file)))
                 {
-                    fileWriter.write(fileReader.readLine());
-                    fileWriter.write("\n");
+                    while (fileReader.ready())
+                    {
+                        String ss = fileReader.readLine();
+                        char [] mass = new char[1024*1024];
+                        fileWriter.println(ss);
+                        fileWriter.println(System.lineSeparator());
+                    }
+                    fileWriter.println(System.lineSeparator());
                 }
-                fileWriter.write("\n");
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
         }
     }
 
-    private static List<File> checkFile (File inputFile){
-        System.out.println("entering in folder " + inputFile.getParent());
-        List<File> listOfFiles = new ArrayList<>();
+    private static List<File> checkFile (File inputFile, List<File> listOfFiles){
+        System.out.println("entering in folder " + inputFile.getParent() + File.separator + inputFile.getName());
         for (File file:
                 inputFile.listFiles())
         {
-            if (file.length() > 50){
                 if(file.isDirectory()){
-                    if (file.length() == 0){
-                        System.out.println("directory deleted");
+                    if (file.listFiles().length == 0){
+                        System.out.println("directory deleted " + file);
                         file.delete();
                     }
-                    else {checkFile(file);}
+                    else {
+                        System.out.println("enter in other folder " + file);
+                        checkFile(file, listOfFiles);
+                    }
                 }
                 else {
-                    System.out.println("file deleted");
-                    file.delete();
+                    if (file.length() > 50){
+                        System.out.println("file deleted " + file);
+                        file.delete();
+                    }
+                    else {
+                        listOfFiles.add(file);
+                        System.out.println("file added " + listOfFiles.size());
+                    }
                 }
-            }
-            else {
-                if (!file.isDirectory())
-                {listOfFiles.add(file);}
-            }
         }
         return listOfFiles;
     }
