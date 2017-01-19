@@ -16,15 +16,22 @@ import java.util.List;
 public class Solution {
     public static List<String> getFileTree(String root) throws IOException {
         ArrayList<String> resultList = new ArrayList<>();
-        ArrayDeque<File> queue = new ArrayDeque<>();
+        ArrayDeque<File> queueFiles = new ArrayDeque<>();
+        ArrayDeque<Integer> queueInts = new ArrayDeque<>();
         File rootFile = new File(root);
         File startFile = rootFile;
         while (true){
+
             File [] files = startFile.listFiles();
             for (int i = 0; i < files.length; i++)
             {
-                if (files[i].isDirectory()){}
-                else {}
+                if (files[i].isDirectory()){
+                    queueFiles.push(startFile);
+                    queueInts.push(i);
+                }
+                else {
+                    
+                }
             }
             break;
         }
