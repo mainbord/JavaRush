@@ -1,0 +1,174 @@
+package com.javarush.test.level31.lesson06.bonus01;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+/* Разархивируем файл
+В метод main приходит список аргументов.
+Первый аргумент - имя результирующего файла resultFileName, остальные аргументы - имена файлов fileNamePart.
+Каждый файл (fileNamePart) - это кусочек zip архива. Нужно разархивировать целый файл, собрав его из кусочков.
+Записать разархивированный файл в resultFileName.
+Архив внутри может содержать файл большой длины, например, 50Mb.
+Внутри архива может содержаться файл с любым именем.
+
+Пример входных данных. Внутри архива находится один файл с именем abc.mp3:
+C:/result.mp3
+C:/pathToTest/test.zip.003
+C:/pathToTest/test.zip.001
+C:/pathToTest/test.zip.004
+C:/pathToTest/test.zip.002
+*/
+public class Solution {
+
+//ХЗ почему так принимает... заколебался с этим заданием.
+    public static void main(String[] args) throws IOException {
+        if (args.length < 2) return;
+
+        String resultFileName = args[0];
+        int filePartCount = args.length - 1;
+        String[] fileNamePart = new String[filePartCount];
+        for (int i = 0; i < filePartCount; i++) {
+            fileNamePart[i] = args[i + 1];
+        }
+
+        // sort by file name
+        Arrays.sort(fileNamePart);
+
+        List<FileInputStream> fisList = new ArrayList<>();
+        for (int i = 0; i < filePartCount; i++) {
+            fisList.add(new FileInputStream(fileNamePart[i]));
+        }
+
+        SequenceInputStream seqInStream = new SequenceInputStream(Collections.enumeration(fisList));
+
+        ZipInputStream zipInStream = new ZipInputStream(seqInStream);
+        FileOutputStream fileOutStream = new FileOutputStream(resultFileName);
+        byte[] buf = new byte[1024 * 1024]; // 1MB buffer
+        while (zipInStream.getNextEntry() != null) {
+            int count;
+            while ((count = zipInStream.read(buf)) != -1) {
+                fileOutStream.write(buf, 0, count);
+            }
+        }
+        seqInStream.close();
+        zipInStream.close();
+        fileOutStream.close();
+    }
+
+    /*
+    public static void main(String[] args) {
+
+
+        public static void main(String[] args) throws IOException {
+            if (args.length < 2) return;
+
+            String resultFileName = args[0];
+            int filePartCount = args.length - 1;
+            String[] fileNamePart = new String[filePartCount];
+            for (int i = 0; i < filePartCount; i++) {
+                fileNamePart[i] = args[i + 1];
+            }
+
+            // sort by file name
+            Arrays.sort(fileNamePart);
+
+            List<FileInputStream> fisList = new ArrayList<>();
+            for (int i = 0; i < filePartCount; i++) {
+                fisList.add(new FileInputStream(fileNamePart[i]));
+            }
+
+            SequenceInputStream seqInStream = new SequenceInputStream(Collections.enumeration(fisList));
+
+            ZipInputStream zipInStream = new ZipInputStream(seqInStream);
+            FileOutputStream fileOutStream = new FileOutputStream(resultFileName);
+            byte[] buf = new byte[1024 * 1024]; // 1MB buffer
+            while (zipInStream.getNextEntry() != null) {
+                int count;
+                while ((count = zipInStream.read(buf)) != -1) {
+                    fileOutStream.write(buf, 0, count);
+                }
+            }
+            seqInStream.close();
+            zipInStream.close();
+            fileOutStream.close();
+        }
+
+
+
+
+
+                System.out.println("c:\\123.zip.001".replaceAll("(\\.*)(\\.\\d{3})(\\.{0})",""));
+        System.out.println();
+
+        try
+        {
+            File resultFileName = Paths.get(args[0]).toFile();
+            File tempFile = Files.createTempFile(resultFileName.getName(),null).toFile();
+//            FileOutputStream out = new FileOutputStream(tempFile);
+
+            List<FileInputStream> list = new ArrayList<>();
+
+            for (int i = 1; i < args.length; i++)
+            {
+*//*                byte [] buf = new byte[1024 * 4];*//*
+                list.add(new FileInputStream(args[i]));
+*//*                FileInputStream in = new FileInputStream(fileNamePart);
+                int len;
+                while ((len = in.read(buf)) > 0){
+                    out.write(buf, 0, len);
+                }
+                in.close();*//*
+            }
+
+//            out.close();
+
+            ZipOutputStream outFile = new ZipOutputStream(new FileOutputStream(resultFileName + File.separator + tempFile.getName().replaceAll("(\\.*)(\\.\\d{3})(\\.{0})","")));
+            //ZipInputStream inFile = new ZipInputStream(new SequenceInputStream(Collections.enumeration(list)));
+            ZipInputStream inFile = new ZipInputStream(new SequenceInputStream(Collections.enumeration(list)));
+            //            ZipInputStream inFile = new ZipInputStream(new FileInputStream(tempFile));
+            ZipEntry entry = inFile.getNextEntry();
+            System.out.println("entry = " + entry);
+            byte [] buf = new byte[1024 * 4];
+            while (entry != null){
+
+                String fileName = entry.getName();
+                System.out.println(fileName);
+                File newFile = new File(resultFileName.getAbsolutePath() + File.separator + fileName);
+
+                System.out.println("file unzip : "+ newFile.getAbsoluteFile());
+
+                new File(newFile.getParent()).mkdirs();
+
+                if (entry.isDirectory()){
+                    newFile.mkdir();
+                }
+                else {
+                    FileOutputStream fos = new FileOutputStream(newFile);
+
+                    int len;
+                    while ((len = inFile.read(buf)) > 0) {
+                        fos.write(buf, 0, len);
+                    }
+
+                    fos.close();
+                }
+                entry = inFile.getNextEntry();
+            }
+            inFile.closeEntry();
+            inFile.close();
+            outFile.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }*/
+}
